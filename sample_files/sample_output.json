@@ -1,0 +1,22 @@
+{
+  "ipa_info": {
+    "CFBundleName": "MyApp",
+    "CFBundleDisplayName": "My App",
+    "CFBundleIdentifier": "com.acme.myapp",
+    "CFBundleVersion": "1.0.0",
+    "CFBundleShortVersionString": "1.0.0",
+    "ios_sdk": "iphoneos8.1",
+    "MinimumOSVersion": "6.1",
+    "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown"],
+    "AppIDName": "My Cool App",
+    "ApplicationIdentifierPrefix": ["XYZ1234567"],
+    "get-task-allow": false,
+    "application-identifier": "XYZ1234567.com.acme.myapp",
+    "ExpirationDate": "2016-10-10T15:54:24Z",
+    "TeamName": "Acme, Inc.",
+    "UUID": "3c8da2fa-ac47-4457-9811-42b2cd414368",
+
+    // Can be "enterprise", "app_store", "adhoc" or "development"
+    "distribution_type": "app_store"
+  }
+}
