@@ -1,7 +1,6 @@
 import plistlib
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-from struct import *
 
 
 class Validate:
@@ -18,18 +17,6 @@ class Validate:
     req-006: The app id from the Entitlements section must match the app id from Info.plist, taking wildcards into account.
     req-007: Executable files should be in the correct format for iOS devices (armv7, armv7s, arm64, etc)
     """
-    # 4 bytes for magic - 0xcafebabe
-    # 4 bytes for a count of how many slices are in this file
-    HEADER_MAGIC_SIZE = 4
-    MACHO_HEADER_MAGIC = 0xfeedface
-    MACHO_HEADER_CIGAM = 0xcefaedfe
-    MACHO64_HEADER_MAGIC = 0xfeedfacf
-    MACHO64_HEADER_CIGAM = 0xcffaedfe
-    # Size for the fat_arch struct
-    FAT_ARCH_SIZE = 8
-    # Identifies this file as a fat binary
-    FAT_HEADER_MAGIC = 0xcafebabe
-
     def __init__(self, dest_path) -> None:
         """
         __init__
@@ -46,6 +33,14 @@ class Validate:
     @property
     def app_dir(self):
         return self._app_dir
+
+    @property
+    def executable_name(self):
+        return self._executable_file
+
+    @property
+    def executable_path(self):
+        return self._app_dir / self._executable_file
 
     def validate_structure(self):
         """
@@ -121,33 +116,6 @@ class Validate:
             print('The embedded provisioning profile has expired on {0}'.format(exp_date))
         # req-006
         self._validate_app_id(self._bundle_id, app_id)
-
-    def parse_mach_header(self):
-        """
-        Parse information in the Mach-O header of an iOS executable.
-        :return: None
-        """
-        # req-007
-        print('Checking executable file {0}'.format(self._executable_file))
-        path_to_executable = self._app_dir / self._executable_file
-        with path_to_executable.open('rb') as macho_fp:
-            header_magic = macho_fp.read(Validate.HEADER_MAGIC_SIZE)
-            res = unpack('>I', header_magic)
-            if res[0] == Validate.FAT_HEADER_MAGIC:
-                print('Found a fat binary header')
-                fat_count = macho_fp.read(Validate.HEADER_MAGIC_SIZE)
-                res = unpack('>I', fat_count)
-                print('Fat binary contains {0} architectures'.format(res[0]))
-            elif res[0] == Validate.MACHO_HEADER_MAGIC:
-                print('Found a mach-o header')
-            elif res[0] == Validate.MACHO_HEADER_CIGAM:
-                print('Found a mach-o header (endian-flipped)')
-            elif res[0] == Validate.MACHO64_HEADER_MAGIC:
-                print('Found a mach-o 64 bit header')
-            elif res[0] == Validate.MACHO64_HEADER_CIGAM:
-                print('Found a mach-o 64 bit header (endian-flipped)')
-            else:
-                raise Exception('Unknown header bytes: {0:#x}'.format(res[0]))
 
     def _validate_app_id(self, app_id_from_info_plist, app_id_from_provisioning_file):
         """

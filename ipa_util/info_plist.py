@@ -1,7 +1,11 @@
+from datetime import datetime
+
+
 class PlistScanner:
     """
     Extracts useful info from Info.plist
     """
+    # TODO: This can be improved.
 
     def __init__(self, plist_dict) -> None:
         super().__init__()
@@ -10,18 +14,29 @@ class PlistScanner:
     def dump_info(self):
         """
         Dump keys that are relevant to us. Used mainly for debugging
-        :return:
+        :return: A dictionary containing metadata we're interested in
         """
-        print('CFBundleIdentifier: {0}'.format(self._plist_dict['CFBundleIdentifier']))
-        print('MinimumOSVersion: {0}'.format(self._plist_dict['MinimumOSVersion']))
-        print('UISupportedInterfaceOrientations: {0}'.format(self._plist_dict['UISupportedInterfaceOrientations']))
-        print('DTSDKName: {0}'.format(self._plist_dict['DTSDKName']))
-        if 'UIRequiredDeviceCapabilities' in self._plist_dict:
-            print('UIRequiredDeviceCapabilities: {0}'.format(self._plist_dict['UIRequiredDeviceCapabilities']))
-        print('CFBundleVersion: {0}'.format(self._plist_dict['CFBundleVersion']))
-        print('CFBundleShortVersionString: {0}'.format(self._plist_dict['CFBundleShortVersionString']))
-        print('CFBundleDisplayName: {0}'.format(self._plist_dict['CFBundleDisplayName']))
-        print('CFBundleExecutable: {0}'.format(self._plist_dict['CFBundleExecutable']))
+        val_obj = {}
+        self._safe_dict_copy('CFBundleIdentifier', val_obj)
+        self._safe_dict_copy('MinimumOSVersion', val_obj)
+        self._safe_dict_copy('UISupportedInterfaceOrientations', val_obj)
+        self._safe_dict_copy('DTSDKName', val_obj)
+        self._safe_dict_copy('UIRequiredDeviceCapabilities', val_obj)
+        self._safe_dict_copy('CFBundleVersion', val_obj)
+        self._safe_dict_copy('CFBundleShortVersionString', val_obj)
+        self._safe_dict_copy('CFBundleDisplayName', val_obj)
+        self._safe_dict_copy('CFBundleExecutable', val_obj)
+        return val_obj
+
+    def _safe_dict_copy(self, key, val_obj):
+        """
+        Safely copy from the source dict into a target but only if the given key exists
+        :param key: The key to look for in the source dict
+        :return: None
+        """
+        val = self._plist_dict.get(key)
+        if val is not None:
+            val_obj[key] = val
 
 
 class EmbeddedProvisioningPlistScanner:
@@ -37,15 +52,33 @@ class EmbeddedProvisioningPlistScanner:
         Dump keys that are relevant to us. Used mainly for debugging
         :return:
         """
-        print('AppIDName: {0}'.format(self._plist_dict['AppIDName']))
-        print('ApplicationIdentifierPrefix: {0}'.format(self._plist_dict['ApplicationIdentifierPrefix']))
-        print('CreationDate: {0}'.format(self._plist_dict['CreationDate']))
-        if 'Platform' in self._plist_dict:
-            print('Platform: {0}'.format(self._plist_dict['Platform']))
-        print('ExpirationDate: {0}'.format(self._plist_dict['ExpirationDate']))
-        print('Name: {0}'.format(self._plist_dict['Name']))
-        if 'ProvisionsAllDevices' in self._plist_dict:
-            print('ProvisionsAllDevices: {0}'.format(self._plist_dict['ProvisionsAllDevices']))
-        print('TeamIdentifier: {0}'.format(self._plist_dict['TeamIdentifier']))
-        print('TeamName: {0}'.format(self._plist_dict['TeamName']))
-        print('UUID: {0}'.format(self._plist_dict['UUID']))
+        val_obj = {}
+        self._safe_dict_copy('AppIDName', val_obj)
+        self._safe_dict_copy('ApplicationIdentifierPrefix', val_obj)
+        self._safe_dict_copy('Platform', val_obj)
+        self._safe_dict_copy('Name', val_obj)
+        self._safe_dict_copy('ProvisionsAllDevices', val_obj)
+        self._safe_dict_copy('TeamIdentifier', val_obj)
+        self._safe_dict_copy('TeamName', val_obj)
+        self._safe_dict_copy('UUID', val_obj)
+        #
+        dt = self._plist_dict.get('CreationDate')
+        if dt is not None:
+            val_obj['CreationDate'] = dt.isoformat()
+        exp_dt = self._plist_dict.get('ExpirationDate')
+        if exp_dt is not None:
+            val_obj['ExpirationDate'] = exp_dt.isoformat()
+        now = datetime.now()
+        val_obj['profile_is_expired'] = (exp_dt < now)
+        return val_obj
+
+    def _safe_dict_copy(self, key, val_obj):
+        """
+        Safely copy from the source dict into a target but only if the given key exists
+        :param key: The key to look for in the source dict
+        :return: None
+        """
+        val = self._plist_dict.get(key)
+        if val is not None:
+            val_obj[key] = val
+
