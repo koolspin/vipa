@@ -1,5 +1,6 @@
 import sys
 import argparse
+import tempfile
 
 from ipa_util.info_plist import PlistScanner, EmbeddedProvisioningPlistScanner
 from ipa_util.mach_o import MachO
@@ -22,11 +23,14 @@ def validate_args():
 if __name__ == '__main__':
     res = validate_args()
     if res[0]:
+        tempdir_obj = None
         src_path = res[1]
         if res[2] is None:
-            dest_path = '/Users/cturner/vipa_temp'
+            tempdir_obj = tempfile.TemporaryDirectory(prefix='vipa_')
+            dest_path = tempdir_obj.name
         else:
             dest_path = res[2]
+        print('Temporary directory path: {0}'.format(dest_path))
         # top level object
         top_level = {}
         root_obj = {}
@@ -65,6 +69,8 @@ if __name__ == '__main__':
         print('ipa info: {0}'.format(top_level))
         # Finally, clean up our mess
         ipa_unpacker.cleanup_dest()
+        if tempdir_obj is not None:
+            tempdir_obj.cleanup()
         exit(0)
     else:
         exit(1)

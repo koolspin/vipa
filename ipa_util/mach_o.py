@@ -91,45 +91,49 @@ class MachO:
                 slice = {}
                 arch_struct = macho_fp.read(MachO.MACH_ARCH_SIZE)
                 if self._sys_is_big_endian:
-                    res_arch = unpack('>ii', arch_struct)
-                else:
                     res_arch = unpack('<ii', arch_struct)
+                else:
+                    res_arch = unpack('>ii', arch_struct)
                 dec_cpu = self._decode_cpu_types(res_arch[0],res_arch[1])
                 slice['cpu_type'] = dec_cpu[0]
                 slice['cpu_subtype'] = dec_cpu[1]
+                binary_slices.append(slice)
             elif res[0] == MachO.MACHO_HEADER_CIGAM:
                 ftype = 'mach_o_binary'
                 slice = {}
                 arch_struct = macho_fp.read(MachO.MACH_ARCH_SIZE)
                 if not self._sys_is_big_endian:
-                    res_arch = unpack('>ii', arch_struct)
-                else:
                     res_arch = unpack('<ii', arch_struct)
+                else:
+                    res_arch = unpack('>ii', arch_struct)
                 dec_cpu = self._decode_cpu_types(res_arch[0],res_arch[1])
                 slice['cpu_type'] = dec_cpu[0]
                 slice['cpu_subtype'] = dec_cpu[1]
+                binary_slices.append(slice)
             elif res[0] == MachO.MACHO64_HEADER_MAGIC:
                 ftype = 'mach_64_binary'
                 slice = {}
                 arch_struct = macho_fp.read(MachO.MACH_ARCH_SIZE)
                 if self._sys_is_big_endian:
-                    res_arch = unpack('>ii', arch_struct)
-                else:
                     res_arch = unpack('<ii', arch_struct)
+                else:
+                    res_arch = unpack('>ii', arch_struct)
                 dec_cpu = self._decode_cpu_types(res_arch[0],res_arch[1])
                 slice['cpu_type'] = dec_cpu[0]
                 slice['cpu_subtype'] = dec_cpu[1]
+                binary_slices.append(slice)
             elif res[0] == MachO.MACHO64_HEADER_CIGAM:
                 ftype = 'mach_64_binary'
                 slice = {}
                 arch_struct = macho_fp.read(MachO.MACH_ARCH_SIZE)
                 if not self._sys_is_big_endian:
-                    res_arch = unpack('>ii', arch_struct)
-                else:
                     res_arch = unpack('<ii', arch_struct)
+                else:
+                    res_arch = unpack('>ii', arch_struct)
                 dec_cpu = self._decode_cpu_types(res_arch[0],res_arch[1])
                 slice['cpu_type'] = dec_cpu[0]
                 slice['cpu_subtype'] = dec_cpu[1]
+                binary_slices.append(slice)
             else:
                 raise Exception('Unknown header bytes: {0:#x}'.format(res[0]))
         value_object['binary_name'] = self._executable_name
@@ -148,12 +152,12 @@ class MachO:
         cpu_typ_num = cpu_type & MachO.ARCH_MASK
         cpu_typ_name = self._cputype_map.get(cpu_typ_num)
         if cpu_typ_name is None:
-            cpu_typ_name = '????'
+            cpu_typ_name = '{0:#x}'.format(cpu_typ_num)
         if cpu_type & MachO.ARCH_64BIT_FLAG:
             cpu_typ_name = cpu_typ_name + '64'
         if cpu_typ_num == 12:
             cpu_subtyp_name = self._arm_subtype_map.get(cpu_subtype)
             if cpu_subtyp_name is None:
-                cpu_subtyp_name = '????'
+                cpu_subtyp_name = '{0:#x}'.format(cpu_subtype)
         return cpu_typ_name, cpu_subtyp_name
 
